@@ -20,6 +20,6 @@ type Config struct {
 func DefaultConfig() Config {
 	var config Config
 	config.DB.DSN = DefaultDSN
-	config.HTTP.Addr = "3000"
+	config.HTTP.Addr = ":3000"
 	return config
 }
