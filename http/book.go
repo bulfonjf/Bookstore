@@ -9,7 +9,21 @@ import (
 )
 
 func (s *Server) registerBookRoutes(r *mux.Router) {
+	r.HandleFunc("/books", s.getBooks).Methods("GET")
 	r.HandleFunc("/books", s.createBook).Methods("POST")
+}
+
+func (s *Server) getBooks(w http.ResponseWriter, r *http.Request) {
+	var books []application.BookDTO
+	switch r.Header.Get("Content-type") {
+	case "application/json":
+		if err := json.NewDecoder(r.Body).Decode(&books); err != nil {
+			httpCode := errorStatusCode(application.ErrorCode(err))
+			handleError(w, r, httpCode, application.ErrorMessage(err), err)
+		}
+	default:
+		handleInvalidContentType(w, r)
+	}
 }
 
 func (s *Server) createBook(w http.ResponseWriter, r *http.Request) {

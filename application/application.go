@@ -28,3 +28,18 @@ func (bs *BookService) CreateBook(createBookDTO CreateBookDTO) (BookDTO, error) 
 
 	return mapToBookDto(book), nil
 }
+
+func (bs *BookService) GetBooks() ([]BookDTO, error) {
+	var booksDTO []BookDTO
+	var books []domain.Book
+	books, err := bs.repository.GetBooks()
+	if  err != nil {
+		return booksDTO, err
+	}
+
+	for _, b := range books {
+		booksDTO = append(booksDTO, mapToBookDto(b))
+	}
+
+	return booksDTO, nil
+}
