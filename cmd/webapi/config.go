@@ -2,7 +2,7 @@ package main
 
 const (
 	// DefaultDSN is the default datasource name.
-	DefaultDSN = "./infrastructure/sqlite/db"
+	DefaultDSN = "sqlite::memory:"
 )
 
 type Config struct {
@@ -13,13 +13,6 @@ type Config struct {
 	HTTP struct {
 		Addr     string
 		Domain   string
-		HashKey  string
-		BlockKey string
-	}
-
-	GitHub struct {
-		ClientID     string
-		ClientSecret string
 	}
 }
 
@@ -27,5 +20,6 @@ type Config struct {
 func DefaultConfig() Config {
 	var config Config
 	config.DB.DSN = DefaultDSN
+	config.HTTP.Addr = "3000"
 	return config
 }

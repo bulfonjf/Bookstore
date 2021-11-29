@@ -1,26 +1,28 @@
 package main
 
 import (
+	"bookstore/application"
+	"bookstore/http"
+	"bookstore/inmem"
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 )
 
 type WebApiMain struct {
 	Config     Config
-	DB         *sqlite.DB
+	DB         *inmem.InMemRepository
 	HTTPServer *http.Server
 }
 
 func NewMain() *WebApiMain {
 	config := DefaultConfig()
-	sqliteDB := sqlite.NewDB(config.DB)
+	inmemRepository := inmem.NewInMemoryRepository(config.DB.DSN)
 
 	return &WebApiMain{
 		Config:     config,
-		DB:         sqliteDB,
+		DB:         inmemRepository,
 		HTTPServer: http.NewServer(),
 	}
 }
@@ -31,7 +33,7 @@ func (m *WebApiMain) Close() error {
 			return err
 		}
 	}
-	if *m.DB != nil {
+	if m.DB != nil {
 		if err := m.DB.Close(); err != nil {
 			return err
 		}
@@ -46,24 +48,20 @@ func (m *WebApiMain) Run(ctx context.Context) (err error) {
 	}
 
 	m.HTTPServer.BookService = application.NewBookService(m.DB)
-	m.HTTPServer.AuthorService = application.NewAuthorService(m.DB)
+	//m.HTTPServer.AuthorService = application.NewAuthorService(m.DB)
 
 	m.HTTPServer.Addr = m.Config.HTTP.Addr
 	m.HTTPServer.Domain = m.Config.HTTP.Domain
-	m.HTTPServer.HashKey = m.Config.HTTP.HashKey
-	m.HTTPServer.BlockKey = m.Config.HTTP.BlockKey
-	m.HTTPServer.GitHubClientID = m.Config.GitHub.ClientID
-	m.HTTPServer.GitHubClientSecret = m.Config.GitHub.ClientSecret
 
 	if err := m.HTTPServer.Open(); err != nil {
 		return err
 	}
 
-	if m.HTTPServer.UseTLS() {
-		go func() {
-			log.Fatal(http.ListenAndServeTLSRedirect(m.Config.HTTP.Domain))
-		}()
-	}
+	// if m.HTTPServer.UseTLS() {
+	// 	go func() {
+	// 		log.Fatal(http.ListenAndServeTLSRedirect(m.Config.HTTP.Domain))
+	// 	}()
+	// }
 
 	return nil
 }
