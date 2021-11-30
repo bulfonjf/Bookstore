@@ -14,27 +14,43 @@ func (s *Server) registerBookRoutes(r *mux.Router) {
 }
 
 func (s *Server) getBooks(w http.ResponseWriter, r *http.Request) {
-	var books []application.BookDTO
-	switch r.Header.Get("Content-type") {
+	switch r.Header.Get("Accept") {
 	case "application/json":
-		if err := json.NewDecoder(r.Body).Decode(&books); err != nil {
+		booksDTO, err := s.BookService.GetBooks()
+		if err != nil {
 			httpCode := errorStatusCode(application.ErrorCode(err))
 			handleError(w, r, httpCode, application.ErrorMessage(err), err)
 		}
+
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(booksDTO)
 	default:
-		handleInvalidContentType(w, r)
+		handleNotAcceptable(w, r)
 	}
 }
 
 func (s *Server) createBook(w http.ResponseWriter, r *http.Request) {
-	var book application.CreateBookDTO
+	var createBookDTO application.CreateBookDTO
 	switch r.Header.Get("Content-type") {
 	case "application/json":
-		if err := json.NewDecoder(r.Body).Decode(&book); err != nil {
-			httpCode := errorStatusCode(application.ErrorCode(err))
-			handleError(w, r, httpCode, application.ErrorMessage(err), err)
+		if err := json.NewDecoder(r.Body).Decode(&createBookDTO); err != nil {
+			handleBadScheme(w, r, err)
 		}
 	default:
 		handleInvalidContentType(w, r)
+	}
+
+	switch r.Header.Get("Accept") {
+	case "application/json":
+		bookDTO, err := s.BookService.CreateBook(createBookDTO)
+		if err != nil {
+			httpCode := errorStatusCode(application.ErrorCode(err))
+			handleError(w, r, httpCode, application.ErrorMessage(err), err)
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(bookDTO)
+	default:
+		handleNotAcceptable(w, r)
 	}
 }
