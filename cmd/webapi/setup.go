@@ -42,7 +42,6 @@ func (m *WebApiMain) Close() error {
 }
 
 func (m *WebApiMain) Run(ctx context.Context) (err error) {
-
 	if err := m.DB.Open(); err != nil {
 		return fmt.Errorf("cannot open db: %w", err)
 	}

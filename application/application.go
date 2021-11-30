@@ -33,7 +33,7 @@ func (bs *BookService) GetBooks() ([]BookDTO, error) {
 	var booksDTO []BookDTO
 	var books []domain.Book
 	books, err := bs.repository.GetBooks()
-	if  err != nil {
+	if err != nil {
 		return booksDTO, err
 	}
 

@@ -37,6 +37,8 @@ func NewServer() *Server {
 	router := s.router.PathPrefix("/").Subrouter()
 	s.registerBookRoutes(router)
 
+	s.server.Handler = router
+
 	return s
 }
 
