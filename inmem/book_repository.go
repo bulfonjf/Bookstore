@@ -27,7 +27,7 @@ func (i *InMemRepository) GetBooks() ([]domain.Book, error) {
 	var books []domain.Book
 
 	for _, b := range i.books {
-		id, err := uuid.FromBytes([]byte(b.id))
+		id, err := uuid.Parse(b.id)
 		if err != nil {
 			return []domain.Book{}, fmt.Errorf("InMemRepository: can't convert string ID to uuid, %w", err)
 		}
