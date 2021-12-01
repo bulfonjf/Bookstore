@@ -79,13 +79,13 @@ func handleNotFound(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleInvalidContentType(w http.ResponseWriter, r *http.Request) {
-	handleError(w, r, http.StatusUnsupportedMediaType, "Content-type header must be application/json", nil)
+	handleErrorAsJson(w, r, http.StatusUnsupportedMediaType, "Content-type header must be application/json", nil)
 }
 
 func handleNotAcceptable(w http.ResponseWriter, r *http.Request) {
-	handleError(w, r, http.StatusNotAcceptable, "The client doesn't accept application/json", nil)
+	handleErrorAsJson(w, r, http.StatusNotAcceptable, "The client doesn't accept application/json", nil)
 }
 
 func handleBadScheme(w http.ResponseWriter, r *http.Request, err error) {
-	handleError(w, r, http.StatusBadRequest, "Invalid scheme", err)
+	handleErrorAsJson(w, r, http.StatusBadRequest, "Invalid scheme", err)
 }

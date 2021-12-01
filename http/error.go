@@ -11,7 +11,7 @@ type ErrorResponse struct {
 	Error string `json:"error"`
 }
 
-func handleError(w http.ResponseWriter, r *http.Request, code int, message string, err error) {
+func handleErrorAsJson(w http.ResponseWriter, r *http.Request, code int, message string, err error) {
 	if err != nil {
 		logError(r, err)
 	}

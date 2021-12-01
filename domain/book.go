@@ -9,7 +9,11 @@ type Book struct {
 
 func NewBook(title string) Book {
 	return Book{
-		ID: uuid.New(),
+		ID:    uuid.New(),
 		Title: title,
 	}
+}
+
+func BooksAreEqual(a Book, b Book) bool {
+	return a.ID == b.ID && a.Title == b.Title
 }
