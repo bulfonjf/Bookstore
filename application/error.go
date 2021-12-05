@@ -19,12 +19,12 @@ type Error struct {
 	Message string
 }
 
-func (e *Error) Error() string {
+func (e Error) Error() string {
 	return fmt.Sprintf("bookstore error: code=%s message=%s", e.Code, e.Message)
 }
 
 func ErrorCode(err error) string {
-	var e *Error
+	var e Error
 	if err == nil {
 		return ""
 	} else if errors.As(err, &e) {
@@ -34,7 +34,7 @@ func ErrorCode(err error) string {
 }
 
 func ErrorMessage(err error) string {
-	var e *Error
+	var e Error
 	if err == nil {
 		return ""
 	} else if errors.As(err, &e) {

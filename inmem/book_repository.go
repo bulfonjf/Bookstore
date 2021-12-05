@@ -3,13 +3,8 @@ package inmem
 import (
 	"bookstore/application"
 	"bookstore/domain"
-	"errors"
 
 	"github.com/google/uuid"
-)
-
-var (
-	ErrNotFound = errors.New("book not found in repository")
 )
 
 type inmemBook struct {
@@ -46,19 +41,17 @@ func (i *InMemRepository) GetBooks() ([]domain.Book, error) {
 func (i *InMemRepository) GetBookByID(id uuid.UUID) (domain.Book, error) {
 	bookFound := domain.Book{}
 	bookIndex := i.getBookIndex(id)
-	if bookIndex > 0 {
-		b := i.books[bookIndex]
-		parsedID, err := application.ParseBookID(b.id)
-		if err != nil {
-			return domain.Book{}, err
-		}
-
-		bookFound = domain.Book{ID: parsedID, Title: b.title}
+	if bookIndex < 0 {
+		return domain.Book{}, application.ErrNotFound
 	}
 
-	if domain.BooksAreEqual(bookFound, domain.Book{}) {
-		return domain.Book{}, ErrNotFound
+	b := i.books[bookIndex]
+	parsedID, err := application.ParseBookID(b.id)
+	if err != nil {
+		return domain.Book{}, err
 	}
+
+	bookFound = domain.Book{ID: parsedID, Title: b.title}
 
 	return bookFound, nil
 }
@@ -73,13 +66,47 @@ func (i *InMemRepository) UpdateBook(book domain.Book) error {
 	}
 }
 
+func (i *InMemRepository) DeleteBook(id uuid.UUID) error {
+	_, err := i.GetBookByID(id)
+	if err != nil {
+		return err
+	}
+
+	bookIndex := i.getBookIndex(id)
+	i.books = deleteBook(i.books, bookIndex)
+
+	return nil
+}
+
 func (i *InMemRepository) getBookIndex(id uuid.UUID) int {
 	for index, b := range i.books {
-		if b.id == id.String() {
-			return index, nil
+		if id.String() == b.id {
+			return index
 		}
 
 	}
 
-	return 0, nil
+	return -1
+}
+
+func deleteBook(books []inmemBook, indexToRemove int) []inmemBook {
+	currentLength := len(books)
+
+	if currentLength == 0 {
+		return books
+	}
+
+	lastItem := currentLength - 1
+
+	switch true {
+	case indexToRemove == lastItem:
+		books = books[:lastItem]
+	case indexToRemove > 0 && indexToRemove < lastItem:
+		books[indexToRemove] = books[lastItem]
+		books = books[:lastItem]
+	case indexToRemove == 0:
+		books = books[1:]
+	}
+
+	return books
 }

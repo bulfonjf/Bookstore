@@ -9,7 +9,9 @@ import (
 )
 
 var (
-	ErrCreateBook = errors.New("the book can't be created in the repository")
+	ErrCreateBook    = Error{Code: EINTERNAL, Message: "the book can't be created in the repository"}
+	ErrNotFound      = Error{Code: ENOTFOUND, Message: "the book doesn't exist in the repository"}
+	ErrInvalidBookID = Error{Code: EINVALID, Message: "Book id must be a valid uuid"}
 )
 
 func NewBookService(repository BookRepository) *BookService {
@@ -23,13 +25,16 @@ type BookService struct {
 }
 
 func (bs *BookService) CreateBook(createBookDTO CreateBookDTO) (BookDTO, error) {
-	book := domain.NewBook(createBookDTO.Title)
+	book, err := domain.NewBook(createBookDTO.Title)
+	if err != nil && errors.Is(err, domain.ErrInvalidTitle) {
+		return BookDTO{}, Error{Code: EINVALID, Message: err.Error()}
+	}
 
 	if err := bs.repository.CreateBook(book); err != nil {
 		return BookDTO{}, err
 	}
 
-	return mapToBookDto(book), nil
+	return mapToBookDTO(book), nil
 }
 
 func (bs *BookService) GetBooks() ([]BookDTO, error) {
@@ -41,7 +46,7 @@ func (bs *BookService) GetBooks() ([]BookDTO, error) {
 	}
 
 	for _, b := range books {
-		booksDTO = append(booksDTO, mapToBookDto(b))
+		booksDTO = append(booksDTO, mapToBookDTO(b))
 	}
 
 	return booksDTO, nil
@@ -50,11 +55,13 @@ func (bs *BookService) GetBooks() ([]BookDTO, error) {
 func (bs *BookService) GetBookByID(id string) (BookDTO, error) {
 	bookID, err := uuid.Parse(id)
 	if err != nil {
-		return BookDTO{}, fmt.Errorf("Getting book by id: Invalid id. Error: %w", err)
+		return BookDTO{}, ErrInvalidBookID
 	}
 
 	book, err := bs.repository.GetBookByID(bookID)
-	if err != nil {
+	if err != nil && errors.Is(err, ErrNotFound) {
+		return BookDTO{}, err
+	} else if err != nil {
 		return BookDTO{}, fmt.Errorf("Getting book by id from repository: Error: %w", err)
 	}
 
@@ -67,18 +74,34 @@ func (bs *BookService) UpdateBook(updateBookDTO UpdateBookDTO) (BookDTO, error) 
 		return BookDTO{}, err
 	}
 
-	updatedBook, err := bs.repository.UpdateBook(book)
+	err = bs.repository.UpdateBook(book)
 	if err != nil {
 		return BookDTO{}, fmt.Errorf("Book Service: can't update book. Error: %w", err)
 	}
 
-	return mapToBookDTO(updatedBook), nil
+	return mapToBookDTO(book), nil
+}
+
+func (bs *BookService) DeleteBook(bookID string) error {
+	id, err := ParseBookID(bookID)
+	if err != nil {
+		return err
+	}
+
+	err = bs.repository.DeleteBook(id)
+	if err != nil && errors.Is(err, ErrNotFound) {
+		return err
+	} else if err != nil {
+		return fmt.Errorf("Book Service: can't delete book. Error: %w", err)
+	}
+
+	return nil
 }
 
 func ParseBookID(id string) (uuid.UUID, error) {
 	parsedID, err := uuid.Parse(id)
 	if err != nil {
-		return uuid.UUID{}, fmt.Errorf("Book Service: can't convert string ID to uuid, %w", err)
+		return uuid.UUID{}, ErrInvalidBookID
 	}
 
 	return parsedID, nil
