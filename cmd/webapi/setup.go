@@ -1,9 +1,8 @@
 package main
 
 import (
-	"bookstore/application"
-	"bookstore/http"
-	"bookstore/inmem"
+	"bookstore/platform/db/inmem"
+	"bookstore/platform/http"
 	"context"
 	"fmt"
 	"os"
@@ -46,7 +45,7 @@ func (m *WebApiMain) Run(ctx context.Context) (err error) {
 		return fmt.Errorf("cannot open db: %w", err)
 	}
 
-	m.HTTPServer.BookService = application.NewBookService(m.DB)
+	// m.HTTPServer.BookService = application.NewBookService(m.DB)
 	//m.HTTPServer.AuthorService = application.NewAuthorService(m.DB)
 
 	m.HTTPServer.Addr = m.Config.HTTP.Addr
