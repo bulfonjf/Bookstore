@@ -2,6 +2,7 @@ package application
 
 import (
 	"bookstore/domain"
+	"bookstore/internal/apperror"
 	"errors"
 	"fmt"
 
@@ -9,9 +10,9 @@ import (
 )
 
 var (
-	ErrCreateBook    = Error{Code: EINTERNAL, Message: "the book can't be created in the repository"}
-	ErrNotFound      = Error{Code: ENOTFOUND, Message: "the book doesn't exist in the repository"}
-	ErrInvalidBookID = Error{Code: EINVALID, Message: "Book id must be a valid uuid"}
+	ErrCreateBook    = apperror.Error{Code: apperror.EINTERNAL, Message: "the book can't be created in the repository"}
+	ErrNotFound      = apperror.Error{Code: apperror.ENOTFOUND, Message: "the book doesn't exist in the repository"}
+	ErrInvalidBookID = apperror.Error{Code: apperror.EINVALID, Message: "Book id must be a valid uuid"}
 )
 
 type BookService struct {

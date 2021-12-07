@@ -15,7 +15,7 @@ const ShutdownTimeout = 1 * time.Second
 type Server struct {
 	ln     net.Listener
 	server *http.Server
-	router *mux.Router
+	Router *mux.Router
 
 	Addr   string
 	Domain string
@@ -24,30 +24,30 @@ type Server struct {
 }
 
 type RouteRegister interface {
-	RegisterRoutes(router *mux.Router) error
+	RegisterRoutes(router *mux.Router)
 }
 
 func NewServer() *Server {
 	s := &Server{
 		server: &http.Server{},
-		router: mux.NewRouter(),
+		Router: mux.NewRouter(),
 	}
-
-	s.router.Use(reportPanic)
-
-	s.router.NotFoundHandler = http.HandlerFunc(handleNotFound)
-
-	router := s.router.PathPrefix("/").Subrouter()
-	for _, r := range s.RouteRegisters {
-		r.registerRoutes(router)
-	}
-
-	s.server.Handler = router
 
 	return s
 }
 
 func (s *Server) Open() (err error) {
+	s.Router.Use(reportPanic)
+
+	s.Router.NotFoundHandler = http.HandlerFunc(HandleNotFound)
+
+	router := s.Router.PathPrefix("/").Subrouter()
+	for _, r := range s.RouteRegisters {
+		r.RegisterRoutes(router)
+	}
+
+	s.server.Handler = router
+
 	if s.Domain != "" {
 		s.ln = autocert.NewListener(s.Domain)
 	} else {
@@ -79,18 +79,18 @@ func reportPanic(next http.Handler) http.Handler {
 	})
 }
 
-func handleNotFound(w http.ResponseWriter, r *http.Request) {
+func HandleNotFound(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 }
 
-func handleInvalidContentType(w http.ResponseWriter, r *http.Request) {
-	handleErrorAsJson(w, r, http.StatusUnsupportedMediaType, "Content-type header must be application/json", nil)
+func HandleInvalidContentType(w http.ResponseWriter, r *http.Request) {
+	HandleErrorAsJson(w, r, http.StatusUnsupportedMediaType, "Content-type header must be application/json", nil)
 }
 
-func handleNotAcceptable(w http.ResponseWriter, r *http.Request) {
-	handleErrorAsJson(w, r, http.StatusNotAcceptable, "The client doesn't accept application/json", nil)
+func HandleNotAcceptable(w http.ResponseWriter, r *http.Request) {
+	HandleErrorAsJson(w, r, http.StatusNotAcceptable, "The client doesn't accept application/json", nil)
 }
 
-func handleBadScheme(w http.ResponseWriter, r *http.Request, err error) {
-	handleErrorAsJson(w, r, http.StatusBadRequest, "Invalid scheme", err)
+func HandleBadScheme(w http.ResponseWriter, r *http.Request, err error) {
+	HandleErrorAsJson(w, r, http.StatusBadRequest, "Invalid scheme", err)
 }

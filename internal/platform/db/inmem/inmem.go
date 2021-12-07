@@ -1,14 +1,7 @@
 package inmem
 
-import "bookstore/author/infrastructure/inmem"
-
 type InMemRepository struct {
-	books   []inmemBook
-	authors []inmem.Author
-}
-
-func NewInMemoryRepository(dns string) *InMemRepository {
-	return &InMemRepository{}
+	DNS string
 }
 
 func (i *InMemRepository) Open() error {

@@ -7,8 +7,8 @@ import (
 )
 
 var (
-	ErrInvalidAuthorName = errors.New("First name and last name of an Author are required")
-	ErrInvalidAuthorID   = errors.New("Author ID must be a valid ID")
+	ErrInvalidAuthorName = errors.New("first name and last name of an Author are required")
+	ErrInvalidAuthorID   = errors.New("author ID must be a valid ID")
 )
 
 type Author struct {

@@ -1,7 +1,7 @@
 package http
 
 import (
-	"bookstore/application"
+	"bookstore/internal/apperror"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -11,7 +11,7 @@ type ErrorResponse struct {
 	Error string `json:"error"`
 }
 
-func handleErrorAsJson(w http.ResponseWriter, r *http.Request, code int, message string, err error) {
+func HandleErrorAsJson(w http.ResponseWriter, r *http.Request, code int, message string, err error) {
 	if err != nil {
 		logError(r, err)
 	}
@@ -23,15 +23,15 @@ func handleErrorAsJson(w http.ResponseWriter, r *http.Request, code int, message
 }
 
 var codes = map[string]int{
-	application.ECONFLICT:       http.StatusConflict,
-	application.EINVALID:        http.StatusBadRequest,
-	application.ENOTFOUND:       http.StatusNotFound,
-	application.ENOTIMPLEMENTED: http.StatusNotImplemented,
-	application.EUNAUTHORIZED:   http.StatusUnauthorized,
-	application.EINTERNAL:       http.StatusInternalServerError,
+	apperror.ECONFLICT:       http.StatusConflict,
+	apperror.EINVALID:        http.StatusBadRequest,
+	apperror.ENOTFOUND:       http.StatusNotFound,
+	apperror.ENOTIMPLEMENTED: http.StatusNotImplemented,
+	apperror.EUNAUTHORIZED:   http.StatusUnauthorized,
+	apperror.EINTERNAL:       http.StatusInternalServerError,
 }
 
-func errorStatusCode(code string) int {
+func ErrorStatusCode(code string) int {
 	if v, ok := codes[code]; ok {
 		return v
 	}

@@ -1,8 +1,11 @@
 package main
 
 import (
-	"bookstore/platform/db/inmem"
-	"bookstore/platform/http"
+	author_application "bookstore/internal/author/application"
+	author_inmem "bookstore/internal/author/infrastructure/inmem"
+	author_http "bookstore/internal/author/ui/http"
+	"bookstore/internal/platform/http"
+	platform_http "bookstore/internal/platform/http"
 	"context"
 	"fmt"
 	"os"
@@ -10,19 +13,19 @@ import (
 )
 
 type WebApiMain struct {
-	Config     Config
-	DB         *inmem.InMemRepository
-	HTTPServer *http.Server
+	Config           Config
+	AuthorRepository *author_inmem.InMemAuthorRepository
+	HTTPServer       *platform_http.Server
 }
 
 func NewMain() *WebApiMain {
 	config := DefaultConfig()
-	inmemRepository := inmem.NewInMemoryRepository(config.DB.DSN)
+	authorRepository := author_inmem.NewInMemAuthorRepository(config.DB.DSN)
 
 	return &WebApiMain{
-		Config:     config,
-		DB:         inmemRepository,
-		HTTPServer: http.NewServer(),
+		Config:           config,
+		AuthorRepository: authorRepository,
+		HTTPServer:       http.NewServer(),
 	}
 }
 
@@ -32,8 +35,8 @@ func (m *WebApiMain) Close() error {
 			return err
 		}
 	}
-	if m.DB != nil {
-		if err := m.DB.Close(); err != nil {
+	if m.AuthorRepository != nil {
+		if err := m.AuthorRepository.Close(); err != nil {
 			return err
 		}
 	}
@@ -41,25 +44,20 @@ func (m *WebApiMain) Close() error {
 }
 
 func (m *WebApiMain) Run(ctx context.Context) (err error) {
-	if err := m.DB.Open(); err != nil {
+	if err := m.AuthorRepository.Open(); err != nil {
 		return fmt.Errorf("cannot open db: %w", err)
 	}
 
-	// m.HTTPServer.BookService = application.NewBookService(m.DB)
-	//m.HTTPServer.AuthorService = application.NewAuthorService(m.DB)
+	authorApplication := author_application.NewAuthorService(m.AuthorRepository)
+	authorServer := author_http.NewAuthorServer(authorApplication)
 
+	m.HTTPServer.RouteRegisters = []platform_http.RouteRegister{authorServer}
 	m.HTTPServer.Addr = m.Config.HTTP.Addr
 	m.HTTPServer.Domain = m.Config.HTTP.Domain
 
 	if err := m.HTTPServer.Open(); err != nil {
 		return err
 	}
-
-	// if m.HTTPServer.UseTLS() {
-	// 	go func() {
-	// 		log.Fatal(http.ListenAndServeTLSRedirect(m.Config.HTTP.Domain))
-	// 	}()
-	// }
 
 	return nil
 }

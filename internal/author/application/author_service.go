@@ -62,7 +62,7 @@ func (as *AuthorService) GetAuthorByID(id string) (AuthorDTO, error) {
 	if err != nil && errors.Is(err, ErrNotFound) {
 		return AuthorDTO{}, err
 	} else if err != nil {
-		return AuthorDTO{}, fmt.Errorf("Getting author by id from repository, Error: %w", err)
+		return AuthorDTO{}, fmt.Errorf("author service: getting author by id from repository, Error: %w", err)
 	}
 
 	return mapToAuthorDTO(author), nil
@@ -76,7 +76,7 @@ func (as *AuthorService) UpdateAuthor(updateAuthorDTO UpdateAuthorDTO) (AuthorDT
 
 	err = as.repository.UpdateAuthor(author)
 	if err != nil {
-		return AuthorDTO, fmt.Errorf("Author Service: can't update author. Error %w", err)
+		return AuthorDTO{}, fmt.Errorf("author service: can't update author. Error %w", err)
 	}
 
 	return mapToAuthorDTO(author), nil
@@ -92,7 +92,7 @@ func (as *AuthorService) DeleteAuthor(authorID string) error {
 	if err != nil && errors.Is(err, ErrNotFound) {
 		return err
 	} else if err != nil {
-		return fmt.Errorf("Author Service: can't delete author. Error %w", err)
+		return fmt.Errorf("author service: can't delete author. Error %w", err)
 	}
 
 	return nil

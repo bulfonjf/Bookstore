@@ -1,8 +1,9 @@
 package inmem
 
 import (
-	"bookstore/application"
-	"bookstore/author/domain"
+	"bookstore/internal/author/application"
+	"bookstore/internal/author/domain"
+	platform_inmem "bookstore/internal/platform/db/inmem"
 
 	"github.com/google/uuid"
 )
@@ -14,7 +15,15 @@ type Author struct {
 }
 
 type InMemAuthorRepository struct {
+	platform_inmem.InMemRepository
 	authors []Author
+}
+
+func NewInMemAuthorRepository(dns string) *InMemAuthorRepository {
+	return &InMemAuthorRepository{
+		InMemRepository: platform_inmem.InMemRepository{DNS: dns},
+		authors:         []Author{},
+	}
 }
 
 func (i *InMemAuthorRepository) CreateAuthor(author domain.Author) error {
