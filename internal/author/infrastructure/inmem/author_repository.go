@@ -15,13 +15,13 @@ type Author struct {
 }
 
 type InMemAuthorRepository struct {
-	platform_inmem.InMemRepository
+	db platform_inmem.InMemRepository
 	authors []Author
 }
 
 func NewInMemAuthorRepository(dns string) *InMemAuthorRepository {
 	return &InMemAuthorRepository{
-		InMemRepository: platform_inmem.InMemRepository{DNS: dns},
+		db: platform_inmem.InMemRepository{DNS: dns},
 		authors:         []Author{},
 	}
 }

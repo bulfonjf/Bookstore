@@ -4,7 +4,7 @@ import (
 	author_application "bookstore/internal/author/application"
 	author_inmem "bookstore/internal/author/infrastructure/inmem"
 	author_http "bookstore/internal/author/ui/http"
-	"bookstore/internal/platform/http"
+	platform_inmem "bookstore/internal/platform/db/inmem"
 	platform_http "bookstore/internal/platform/http"
 	"context"
 	"fmt"
@@ -13,19 +13,19 @@ import (
 )
 
 type WebApiMain struct {
-	Config           Config
-	AuthorRepository *author_inmem.InMemAuthorRepository
-	HTTPServer       *platform_http.Server
+	Config     Config
+	Repository *platform_inmem.InMemRepository
+	HTTPServer *platform_http.Server
 }
 
 func NewMain() *WebApiMain {
 	config := DefaultConfig()
-	authorRepository := author_inmem.NewInMemAuthorRepository(config.DB.DSN)
+	repository := platform_inmem.NewInMemRepository(config.DB.DSN)
 
 	return &WebApiMain{
-		Config:           config,
-		AuthorRepository: authorRepository,
-		HTTPServer:       http.NewServer(),
+		Config:     config,
+		Repository: repository,
+		HTTPServer: platform_http.NewServer(),
 	}
 }
 
@@ -35,8 +35,8 @@ func (m *WebApiMain) Close() error {
 			return err
 		}
 	}
-	if m.AuthorRepository != nil {
-		if err := m.AuthorRepository.Close(); err != nil {
+	if m.Repository != nil {
+		if err := m.Repository.Close(); err != nil {
 			return err
 		}
 	}
@@ -44,7 +44,9 @@ func (m *WebApiMain) Close() error {
 }
 
 func (m *WebApiMain) Run(ctx context.Context) (err error) {
-	if err := m.AuthorRepository.Open(); err != nil {
+	m.Repository.AddMigration(author_inmem.Migration)
+
+	if err := m.Repository.Open(); err != nil {
 		return fmt.Errorf("cannot open db: %w", err)
 	}
 
