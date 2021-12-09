@@ -5,7 +5,6 @@ import (
 )
 
 type Inventory struct {
-	books map[string]uint
 }
 
 func (i *InMemRepository) AddBook(book domain.Book, q uint) error {

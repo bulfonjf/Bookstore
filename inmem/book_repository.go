@@ -56,10 +56,28 @@ func (i *InMemRepository) GetBookByID(id uuid.UUID) (domain.Book, error) {
 	return bookFound, nil
 }
 
+func (i *InMemRepository) GetBookByTitle(title string) (domain.Book, error) {
+	for _, b := range i.books {
+		if title == b.title {
+			parsedID, err := application.ParseBookID(b.id)
+			if err != nil {
+				return domain.Book{}, err
+			}
+
+			return domain.Book{
+				ID: parsedID,
+				Title: b.title,
+			}, nil
+		}
+	}
+
+	return domain.Book{}, application.ErrNotFound
+}
+
 func (i *InMemRepository) UpdateBook(book domain.Book) error {
 	bookIndex := i.getBookIndex(book.ID)
 	if bookIndex < 0 {
-		return i.CreateBook(book)
+		return application.ErrNotFound
 	} else {
 		i.books[bookIndex] = inmemBook{id: book.ID.String(), title: book.Title}
 		return nil

@@ -11,5 +11,6 @@ type BookRepository interface {
 	DeleteBook(id uuid.UUID) error
 	GetBooks() ([]domain.Book, error)
 	GetBookByID(id uuid.UUID) (domain.Book, error)
+	GetBookByTitle(title string) (domain.Book, error) 
 	UpdateBook(book domain.Book) error
 }

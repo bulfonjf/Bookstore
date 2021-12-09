@@ -25,13 +25,18 @@ type BookService struct {
 }
 
 func (bs *BookService) CreateBook(createBookDTO CreateBookDTO) (BookDTO, error) {
-	book, err := domain.NewBook(createBookDTO.Title)
-	if err != nil && errors.Is(err, domain.ErrInvalidTitle) {
-		return BookDTO{}, Error{Code: EINVALID, Message: err.Error()}
-	}
-
-	if err := bs.repository.CreateBook(book); err != nil {
-		return BookDTO{}, err
+	var book domain.Book
+	book, err := bs.repository.GetBookByTitle(createBookDTO.Title)
+	if err != nil && !errors.Is(err, ErrNotFound) {
+		return BookDTO{}, fmt.Errorf("creating book. Error: %w", err)
+	} else if err != nil && errors.Is(err, ErrNotFound) {
+		book, err = domain.NewBook(createBookDTO.Title)
+		if err != nil && errors.Is(err, domain.ErrInvalidTitle) {
+			return BookDTO{}, Error{Code: EINVALID, Message: err.Error()}
+		}
+		if cbError := bs.repository.CreateBook(book); cbError != nil {
+			return BookDTO{}, cbError
+		}
 	}
 
 	return mapToBookDTO(book), nil
@@ -75,7 +80,9 @@ func (bs *BookService) UpdateBook(updateBookDTO UpdateBookDTO) (BookDTO, error) 
 	}
 
 	err = bs.repository.UpdateBook(book)
-	if err != nil {
+	if err != nil && errors.Is(err, ErrNotFound) {
+		return BookDTO{}, err
+	} else if err != nil {
 		return BookDTO{}, fmt.Errorf("book service: can't update book. Error: %w", err)
 	}
 

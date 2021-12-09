@@ -3,28 +3,29 @@ package application
 import (
 	"bookstore/domain"
 	"errors"
+	"fmt"
 )
 
 func NewInventoryService(repository InventoryRepository, bookRepository BookRepository) *InventoryService {
 	return &InventoryService{
-		repository: repository,
+		repository:     repository,
 		bookRepository: bookRepository,
 	}
 }
 
 type InventoryService struct {
-	repository InventoryRepository
+	repository     InventoryRepository
 	bookRepository BookRepository
 }
 
 func (i *InventoryService) AddBook(bookDTO BookDTO) error {
 	book, err := mapToBook(bookDTO)
 	if err != nil {
-		return Error{Code: EINTERNAL, Message: err.Error()}
+		return fmt.Errorf("adding book to inventory. Error: %w", err)
 	}
 
 	if err = i.repository.AddBook(book, 1); err != nil {
-		return Error{Code: EINTERNAL, Message: err.Error()}
+		return fmt.Errorf("adding book to inventory. Error: %w", err)
 	}
 
 	return nil
@@ -35,13 +36,13 @@ func (i *InventoryService) GetInventory() ([]InventoryDetailDTO, error) {
 
 	inventory, err := i.repository.GetInventory()
 	if err != nil {
-		return []InventoryDetailDTO{}, Error{Code: EINTERNAL, Message: err.Error()}
+		return []InventoryDetailDTO{}, fmt.Errorf("getting the inventory. Error: %w", err)
 	}
 
-	for k, v := range inventory{
+	for k, v := range inventory {
 		bookID, err := ParseBookID(k)
 		if err != nil {
-			return []InventoryDetailDTO{}, Error{Code: EINTERNAL, Message: err.Error()}
+			return []InventoryDetailDTO{}, fmt.Errorf("getting the inventory and parsing book ID. Error: %w", err)
 		}
 
 		book, err := i.bookRepository.GetBookByID(bookID)
@@ -49,7 +50,7 @@ func (i *InventoryService) GetInventory() ([]InventoryDetailDTO, error) {
 			// todo delete book from inventory
 			continue
 		} else if err != nil {
-			return []InventoryDetailDTO{}, Error{Code: EINTERNAL, Message: err.Error()}
+			return []InventoryDetailDTO{}, fmt.Errorf("getting the inventory and getting books details. Error: %w", err)
 		}
 
 		inventoryDetail := domain.NewInventoryDetail(book, v)

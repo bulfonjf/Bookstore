@@ -1,12 +1,15 @@
 package inmem
 
 type InMemRepository struct {
-	books []inmemBook
+	books     []inmemBook
 	inventory map[string]uint
 }
 
 func NewInMemoryRepository(dns string) *InMemRepository {
-	return &InMemRepository{}
+	return &InMemRepository{
+		books:     make([]inmemBook, 0),
+		inventory: make(map[string]uint),
+	}
 }
 
 func (i *InMemRepository) Open() error {
