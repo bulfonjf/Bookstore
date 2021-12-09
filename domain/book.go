@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	ErrInvalidTitle = errors.New("Invalid title")
+	ErrInvalidTitle = errors.New("invalid title")
 )
 
 type Book struct {

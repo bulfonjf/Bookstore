@@ -47,7 +47,7 @@ func (m *WebApiMain) Run(ctx context.Context) (err error) {
 	}
 
 	m.HTTPServer.BookService = application.NewBookService(m.DB)
-	//m.HTTPServer.AuthorService = application.NewAuthorService(m.DB)
+	m.HTTPServer.InventoryService = application.NewInventoryService(m.DB, m.DB)
 
 	m.HTTPServer.Addr = m.Config.HTTP.Addr
 	m.HTTPServer.Domain = m.Config.HTTP.Domain
@@ -55,12 +55,6 @@ func (m *WebApiMain) Run(ctx context.Context) (err error) {
 	if err := m.HTTPServer.Open(); err != nil {
 		return err
 	}
-
-	// if m.HTTPServer.UseTLS() {
-	// 	go func() {
-	// 		log.Fatal(http.ListenAndServeTLSRedirect(m.Config.HTTP.Domain))
-	// 	}()
-	// }
 
 	return nil
 }

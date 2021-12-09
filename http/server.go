@@ -22,6 +22,7 @@ type Server struct {
 	Domain string
 
 	BookService *application.BookService
+	InventoryService *application.InventoryService
 }
 
 func NewServer() *Server {
@@ -36,6 +37,7 @@ func NewServer() *Server {
 
 	router := s.router.PathPrefix("/").Subrouter()
 	s.registerBookRoutes(router)
+	s.registerInventoryRoutes(router)
 
 	s.server.Handler = router
 

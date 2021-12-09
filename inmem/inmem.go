@@ -2,6 +2,7 @@ package inmem
 
 type InMemRepository struct {
 	books []inmemBook
+	inventory map[string]uint
 }
 
 func NewInMemoryRepository(dns string) *InMemRepository {

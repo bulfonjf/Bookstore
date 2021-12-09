@@ -88,6 +88,14 @@ func (s *Server) createBook(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		s.InventoryService.AddBook(bookDTO)
+		if err != nil {
+			httpCode := errorStatusCode(application.ErrorCode(err))
+			handleErrorAsJson(w, r, httpCode, application.ErrorMessage(err), err)
+
+			return
+		}
+
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(bookDTO)
 	default:

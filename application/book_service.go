@@ -62,21 +62,21 @@ func (bs *BookService) GetBookByID(id string) (BookDTO, error) {
 	if err != nil && errors.Is(err, ErrNotFound) {
 		return BookDTO{}, err
 	} else if err != nil {
-		return BookDTO{}, fmt.Errorf("Getting book by id from repository: Error: %w", err)
+		return BookDTO{}, fmt.Errorf("getting book by id from repository: Error: %w", err)
 	}
 
 	return mapToBookDTO(book), nil
 }
 
 func (bs *BookService) UpdateBook(updateBookDTO UpdateBookDTO) (BookDTO, error) {
-	book, err := mapToBook(updateBookDTO)
+	book, err := mapUpdateBookDTOToBook(updateBookDTO)
 	if err != nil {
 		return BookDTO{}, err
 	}
 
 	err = bs.repository.UpdateBook(book)
 	if err != nil {
-		return BookDTO{}, fmt.Errorf("Book Service: can't update book. Error: %w", err)
+		return BookDTO{}, fmt.Errorf("book service: can't update book. Error: %w", err)
 	}
 
 	return mapToBookDTO(book), nil
@@ -92,7 +92,7 @@ func (bs *BookService) DeleteBook(bookID string) error {
 	if err != nil && errors.Is(err, ErrNotFound) {
 		return err
 	} else if err != nil {
-		return fmt.Errorf("Book Service: can't delete book. Error: %w", err)
+		return fmt.Errorf("book service: can't delete book. Error: %w", err)
 	}
 
 	return nil
